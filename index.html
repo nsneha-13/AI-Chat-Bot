@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>School AI Chatbot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --accent: #0b76ef;
+    --muted: #6b7280;
+    --text: #111827;
+    --input-bg: #ffffff;
+    --input-border: #e6e7ea;
+    --chat-bubble-bg: #f3f4f6;
+}
+[data-theme="dark"] {
+    --bg: #0b1220;
+    --card: #071124;
+    --accent: #2b8cff;
+    --muted: #9aa6bf;
+    --text: #e6eef8;
+    --input-bg: #1a233b;
+    --input-border: #2c3e50;
+    --chat-bubble-bg: #1a233b;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+header {
+    background: linear-gradient(90deg, var(--accent), #0056b3);
+    color: white;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.brand { font-weight: 700; font-size: 18px; }
+.page {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+}
+.card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 24px;
+    width: 340px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.08);
+    text-align: center;
+}
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 12px;
+}
+.form-row { margin-bottom: 12px; position: relative; }
+.form-row i { position: absolute; left: 12px; top: 12px; color: var(--muted); }
+.form-row input {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+.chat-layout { display: flex; gap: 14px; width: 100%; }
+.subject-panel {
+    width: 250px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px;
+    height: 720px;
+    overflow: auto;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.05);
+}
+.subject-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: var(--input-bg);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text);
+}
+.subject-btn.active { background: var(--accent); color: white; }
+.suggestions {
+    margin-top: 12px;
+    background: var(--chat-bubble-bg);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+}
+.chat-card {
+    flex: 1;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.05);
+}
+.messages {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.msg {
+    max-width: 80%;
+    padding: 12px;
+    border-radius: 12px;
+    position: relative;
+}
+.msg.bot { align-self: flex-start; background: var(--chat-bubble-bg); color: var(--text); }
+.msg.user { align-self: flex-end; background: var(--accent); color: white; }
+.meta {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+.input-row { display: flex; gap: 8px; }
+.input-row input {
+    flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+.input-row button { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+#themeToggle {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="brand">School AI Chatbot</div>
+    <button id="themeToggle" title="Toggle light/dark">
+        <i id="themeIcon" class="fa-solid fa-moon"></i>
+    </button>
+</header>
+
+<div class="page">
+
+    <!-- MAIN MENU -->
+    <div id="mainMenu" class="card">
+        <h2>Welcome</h2>
+        <p>Select an option</p>
+        <button class="btn-primary" onclick="showSection('studentRegister')">Student Registration</button>
+        <button class="btn-primary" onclick="showSection('studentLogin')">Student Login</button>
+        <button class="btn-primary" onclick="showSection('teacherRegister')">Teacher Registration</button>
+        <button class="btn-primary" onclick="showSection('teacherLogin')">Teacher Login</button>
+    </div>
+
+    <!-- STUDENT REGISTER -->
+    <div id="studentRegister" class="card" style="display:none">
+        <h2>Student Registration</h2>
+        <form id="studentRegisterForm">
+            <div class="form-row"><i class="fa fa-user"></i><input type="text" id="sName" placeholder="Name" required></div>
+            <div class="form-row"><i class="fa fa-envelope"></i><input type="email" id="sEmail" placeholder="Email" required></div>
+            <div class="form-row"><i class="fa fa-school"></i><input type="text" id="sSchool" placeholder="School Name" required></div>
+            <div class="form-row"><i class="fa fa-graduation-cap"></i><input type="text" id="sClass" placeholder="Class" required></div>
+            <div class="form-row"><i class="fa fa-lock"></i><input type="password" id="sPassword" placeholder="Password" required></div>
+            <button class="btn-primary" type="submit">Register</button>
+        </form>
+    </div>
+
+    <!-- STUDENT LOGIN -->
+    <div id="studentLogin" class="card" style="display:none">
+        <h2>Student Login</h2>
+        <form id="studentLoginForm">
+            <div class="form-row"><i class="fa fa-user"></i><input type="text" id="sLoginName" placeholder="Username or Email" required></div>
+            <div class="form-row"><i class="fa fa-lock"></i><input type="password" id="sLoginPass" placeholder="Password" required></div>
+            <button class="btn-primary" type="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- TEACHER REGISTER -->
+    <div id="teacherRegister" class="card" style="display:none">
+        <h2>Teacher Registration</h2>
+        <form id="teacherRegisterForm">
+            <div class="form-row"><i class="fa fa-user"></i><input type="text" id="tName" placeholder="Name" required></div>
+            <div class="form-row"><i class="fa fa-envelope"></i><input type="email" id="tEmail" placeholder="Email" required></div>
+            <div class="form-row"><i class="fa fa-school"></i><input type="text" id="tSchool" placeholder="School Name" required></div>
+            <div class="form-row"><i class="fa fa-lock"></i><input type="password" id="tPassword" placeholder="Password" required></div>
+            <button class="btn-primary" type="submit">Register</button>
+        </form>
+    </div>
+
+    <!-- TEACHER LOGIN -->
+    <div id="teacherLogin" class="card" style="display:none">
+        <h2>Teacher Login</h2>
+        <form id="teacherLoginForm">
+            <div class="form-row"><i class="fa fa-user"></i><input type="text" id="tLoginName" placeholder="Username or Email" required></div>
+            <div class="form-row"><i class="fa fa-lock"></i><input type="password" id="tLoginPass" placeholder="Password" required></div>
+            <button class="btn-primary" type="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- CLASS & SECTION PAGE -->
+    <div id="classSection" class="card" style="display:none">
+        <h2>Select Class & Section</h2>
+        <form id="classForm">
+            <div class="form-row"><i class="fa fa-graduation-cap"></i><input type="text" id="userClass" placeholder="Class (e.g., 10)" required></div>
+            <div class="form-row"><i class="fa fa-users"></i><input type="text" id="userSection" placeholder="Section (e.g., A)" required></div>
+            <button class="btn-primary" type="submit">Continue to Chatbot</button>
+        </form>
+    </div>
+
+    <!-- CHATBOT PAGE -->
+    <div id="chat" style="display:none; width:100%">
+        <div class="chat-layout">
+            <aside class="subject-panel">
+                <h3>Subjects</h3>
+                <div id="subjectButtons"></div>
+                <div id="suggestions" class="suggestions"></div>
+            </aside>
+            <section class="chat-card">
+                <div id="messages" class="messages"></div>
+                <div class="input-row">
+                    <input id="userInput" placeholder="Type your question...">
+                    <button id="sendBtn">Send</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let currentUser = "";
+
+function showSection(name) {
+    ["mainMenu","studentRegister","studentLogin","teacherRegister","teacherLogin","classSection","chat"]
+    .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === name) ? "" : "none";
+    });
+}
+
+/* ==== Registration and Login Simulation ==== */
+document.getElementById("studentRegisterForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    alert("Student registered successfully!");
+    showSection("studentLogin");
+});
+
+document.getElementById("studentLoginForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    currentUser = document.getElementById("sLoginName").value;
+    showSection("classSection");
+});
+
+document.getElementById("teacherRegisterForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    alert("Teacher registered successfully!");
+    showSection("teacherLogin");
+});
+
+document.getElementById("teacherLoginForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    currentUser = document.getElementById("tLoginName").value;
+    showSection("classSection");
+});
+
+document.getElementById("classForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    showSection("chat");
+    appendBot(`Welcome ${currentUser}! You can now chat.`);
+});
+
+/* ==== Chat Section ==== */
+const messagesDiv = document.getElementById("messages");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function timestamp() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+function appendBot(text) {
+    const d=document.createElement("div");
+    d.className="msg bot";
+    d.innerHTML=`<div>${text}</div><div class="meta">Bot • ${timestamp()}</div>`;
+    messagesDiv.appendChild(d);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+function appendUser(text) {
+    const d=document.createElement("div");
+    d.className="msg user";
+    d.innerHTML=`<div>${text}</div><div class="meta">${currentUser} • ${timestamp()}</div>`;
+    messagesDiv.appendChild(d);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+sendBtn.onclick = async () => {
+    const val = userInput.value.trim();
+    if (!val) return;
+
+    appendUser(val);
+    userInput.value = "";
+
+    // show typing indicator
+    appendBot("Thinking...");
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/chat", { }
+, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: val })
+        });
+
+        const data = await res.json();
+
+        // remove the "Thinking..." message (last one)
+        messagesDiv.lastChild.remove();
+
+        appendBot(data.reply);
+    } catch (err) {
+        console.error(err);
+        messagesDiv.lastChild.remove();
+        appendBot(" Error connecting to server. Please check backend.");
+    }
+};
+
+
+
+/* ==== Subjects ==== */
+const subjects={
+  "English": [
+    "What is a noun?",
+    "Write a short paragraph about your school.",
+    "Give three grammar tips for writing clearly."
+  ],
+  "Maths": [
+    "What is algebra?",
+    "Solve 5x + 3 = 13.",
+    "What is geometry and why is it useful?"
+  ],
+  "Science": [
+    "Explain gravity in simple words.",
+    "What is photosynthesis?",
+    "How does friction affect motion?"
+  ],
+  "Social Studies": [
+    "Who was Mahatma Gandhi?",
+    "Write a paragraph on Indian independence.",
+    "Tips for remembering historical dates?"
+  ],
+  "Geography": [
+    "What is a continent?",
+    "Name the longest river in the world.",
+    "How to read a map?"
+  ],
+  "Computer Science": [
+    "What is a computer program?",
+    "Write a simple code to add two numbers.",
+    "Tips for learning coding?"
+  ],
+  "Hindi": [
+    "संज्ञा क्या है?",
+    "अपने पसंदीदा त्योहार पर एक अनुच्छेद लिखिए।",
+    "हिंदी व्याकरण के तीन सुझाव।"
+  ],
+  "Telugu": [
+    "నామవాచకం అంటే ఏమిటి?",
+    "నా ఊరి గురించి చిన్న పేరా రాయండి.",
+    "తెలుగు వ్యాకరణం నేర్చుకోవడానికి చిట్కాలు?"
+  ]
+};
+const subjectButtons=document.getElementById("subjectButtons");
+const suggestionsDiv=document.getElementById("suggestions");
+Object.keys(subjects).forEach((s)=>{
+    const b=document.createElement("button");
+    b.className="subject-btn";
+    b.innerHTML=`<span>${s}</span><i class="fa fa-circle"></i>`;
+    b.onclick=()=>{
+        document.querySelectorAll(".subject-btn").forEach(btn=>{
+            btn.classList.remove("active");
+            btn.querySelector("i").className="fa fa-circle";
+        });
+        b.classList.add("active");
+        b.querySelector("i").className="fa fa-check-circle";
+        appendBot(`You selected ${s}.`);
+        suggestionsDiv.innerHTML="<b>Suggestions:</b><ul>"+subjects[s].map(q=>"<li>"+q+"</li>").join("")+"</ul>";
+    };
+    subjectButtons.appendChild(b);
+});
+
+/* ==== Theme Toggle ==== */
+const themeToggle=document.getElementById('themeToggle');
+const themeIcon=document.getElementById('themeIcon');
+const htmlElement=document.documentElement;
+const currentTheme=localStorage.getItem('theme');
+if(currentTheme){
+    htmlElement.setAttribute('data-theme',currentTheme);
+    themeIcon.className=currentTheme==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';
+}
+themeToggle.addEventListener('click',()=>{
+    let theme=htmlElement.getAttribute('data-theme');
+    if(theme==='dark'){
+        htmlElement.setAttribute('data-theme','light');
+        localStorage.setItem('theme','light');
+        themeIcon.className='fa-solid fa-moon';
+    } else {
+        htmlElement.setAttribute('data-theme','dark');
+        localStorage.setItem('theme','dark');
+        themeIcon.className='fa-solid fa-sun';
+    }
+});
+</script>
+</body>
+</html>
